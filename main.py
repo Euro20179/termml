@@ -4,8 +4,10 @@ import shutil
 
 try: file = sys.argv[1]
 except Exception:
-    print("No file given (use - for stdin)")
-    exit(2)
+    file = "test.tml"
+#    print("No file given (use - for stdin)")
+#    exit(2)
+
 
 if file == "-":
     html = sys.stdin.read()

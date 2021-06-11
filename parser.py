@@ -18,6 +18,7 @@ class TMLParser(HTMLParser):
         elif tag == "p": e = ParagraphElement(tag, attrs, parent=self.currTag)
         elif tag == "br": e = BreakElement(tag, attrs, parent=self.currTag)
         elif tag == "hr": e = HRElement(cols, tag, attrs, parent=self.currTag)
+        elif tag == "title": e = TitleElement(tag, attrs, parent=self.currTag)
         else: e = Element(tag, attrs, parent=self.currTag)
         self.currTag.addChild(e)
         if not e.selfClosing: self.currTag = e

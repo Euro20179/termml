@@ -1,6 +1,9 @@
 from typing import List
 import re
 import math
+from shutil import get_terminal_size
+
+cols, lines = get_terminal_size()
 
 COLORS = {
     "black": "30",
@@ -43,6 +46,10 @@ class Document:
         self.children = children
         self.innerHTML = ""
         self.styles = tuple()
+        self.textCase = "auto"
+        self.x = "auto"
+        self.whitespace = "auto"
+        self.tag = "!DOCUMENT"
 
     def addChild(self, element):
         self.children.append(element)
@@ -63,62 +70,102 @@ def parseColor(color):
             g = int(g, 16) * math.floor(256 / 15)
             b = int(b, 16) * math.floor(256 / 15)
             return f'38;2;{r};{g};{b}'
-        elif len(color) == 6:
 
-
+def stringToInt(string, default=0):
+    if string.isnumeric():
+        return int(string)
+    return default
 
 class Element:
-    def __init__(self, tag, attrs, parent=Document, children=None):
+    def __init__(self, tag, attrs, parent=Document, children=None, **kwargs):
         self.tag = tag
         self.attrs = attrs
         self.parent = parent
         self.children: List[Element] = children or []
         self.styles = []
-        self.gap = 1 #the multiplier for the gap, 1 is normal 2, is twice the default
-        self.bottomGap = 1
-        self.topGap = 1
-        self._parseAtters()
+        self.gap = kwargs.get("gap") or 0 #the multiplier for the gap, 1 is normal 2, is twice the default
+        self.bottomGap = kwargs.get("bottomGap") or 0
+        self.topGap = kwargs.get("topGap") or 0
+        self.textCase = kwargs.get("textCase") or "auto"
+        self.x = kwargs.get("x") or "auto"
+        self.whitespace = "auto"
+        self._parseAttrs()
         self.selfClosing = False
 
-    def _parseAtters(self):
+    def _parseAttrs(self):
         for attr, value in self.attrs:
+            attr = attr.lower()
             if attr == "color":
                 color = COLORS.get(value)
                 if not color: color = parseColor(value)
-                self.styles.append(color)
+                self.styles.append(("fg", color))
             elif attr in ("background", "bg", "background-color", "bg-color"):
                 color = BACKGROUND_COLORS.get(value)
                 if not color: color = parseColor(value)
-                self.styles.append(color)
+                self.styles.append(("bg", color))
+            elif attr in ("bold", "b"):
+                self.styles.append(("text-style", TEXT_STYLES["bold"]))
+            elif attr in ("d", "dim"):
+                self.styles.append(("text-style", TEXT_STYLES["dim"]))
+            elif attr in ("italic", "i"): 
+                self.styles.append(("text-style", TEXT_STYLES["italic"]))
+            elif attr in ("underline", "u"):
+                self.styles.append(("text-style", TEXT_STYLES["underline"]))
+            elif attr == "blink":
+                self.styles.append(("text-style", TEXT_STYLES["blinking"]))
+            elif attr in ("negative", "inverse"):
+                self.styles.append(("text-style", TEXT_STYLES["inverse"]))
+            elif attr in ("invisible", "inv", "hidden"):
+                self.styles.append(("text-style", TEXT_STYLES["invisible"]))
+            elif attr in ("strikethrough", "s"):
+                self.styles.append(("text-style", TEXT_STYLES["strikethrough"]))
+            elif attr == "whitespace":
+                self.whitespace = value
             elif attr == "gap":
-                self.gap = int(value)
-
+                self.gap = stringToInt(value)
             elif attr == "top-gap":
-                self.topGap = int(value)
+                self.topGap = stringToInt(value)
             elif attr == "bottom-gap":
-                self.bottomGap = int(value)
+                self.bottomGap = stringToInt(value)
+            elif attr == "text-case":
+                self.textCase = value
+            elif attr == "x":
+                self.x = stringToInt(value)
 
     def addChild(self, element):
         self.children.append(element) 
 
     def _calculateNewLines(self, fallback=""):
-        if self.topGap != 1:
+        if self.topGap != 0:
             topNewLines = "\n" * self.topGap
-        elif self.gap != 1:
+        elif self.gap != 0:
             topNewLines = "\n" * self.gap
         else: topNewLines = fallback
 
-        if self.bottomGap != 1:
+        if self.bottomGap != 0:
             bottomNewLines = "\n" * self.bottomGap
-        elif self.gap != 1:
+        elif self.gap != 0:
             bottomNewLines = "\n" * self.gap
         else: bottomNewLines = fallback
 
         return topNewLines, bottomNewLines
 
+    @staticmethod
+    def renderStyle(style):
+        name, value = style
+        if name in ("fg", "bg", "text-style"): 
+            yield f"\033[{value}m"
+
+    def preRender(self, topLines):
+        for style in self.styles:
+            yield from Element.renderStyle(style)
+        yield topLines
+
     def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + parseChildren(self) + bottomLines
+        yield parseChildren(self)
+
+    def postRender(self, bottomLines):
+        yield bottomLines
 
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
@@ -126,107 +173,104 @@ class Element:
 class BoldElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["bold"])
+        self.styles.append(("text-style", TEXT_STYLES["bold"]))
 
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[1m" + parseChildren(self) + "\033[0m" + bottomLines
+class TitleElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, gap=1, textCase="upper", x="center")
+        self.styles.append(("text-style", TEXT_STYLES["underline"]))
 
 class HRElement(Element):
     def __init__(self, cols, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs, gap=1)
         self.selfClosing = True
         self.cols = cols
+        self.styles.append(("text-style", "9"))
 
     def render(self):
-        topLines, bottomLines = self._calculateNewLines(fallback="\n")
-        return topLines + "\033[9m" + (" " * self.cols) + "\033[0m" + bottomLines
+        yield " " * self.cols
 
 class DimElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["dim"])
-
-    def render(self):
-        newLines = "\n" * self.gap if self.gap != 1 else ""
-        return "\033[2m" + parseChildren(self) + "\033[0m" + newLines
-
+        self.styles.append(("text-style", TEXT_STYLES["dim"]))
 class ItalicElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["italic"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[3m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["italic"]))
 
 class UnderlineElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["underline"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[4m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["underline"]))
 
 class BlinkElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["blinking"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[5m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["blinking"]))
 
 class ReverseElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["inverse"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[7m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["inverse"]))
 
 class InvisibleElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["invisible"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[8m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["invisible"]))
 
 class StrikethroughElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(TEXT_STYLES["strikethrough"])
-
-    def render(self):
-        topLines, bottomLines = self._calculateNewLines()
-        return topLines + "\033[9m" + parseChildren(self) + "\033[0m" + bottomLines
+        self.styles.append(("text-style", TEXT_STYLES["strikethrough"]))
 
 class ParagraphElement(Element):
-    def render(self):
-        return "\n\n" + parseChildren(self) + ("\n\n" * self.gap)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, gap=1)
 
 class BreakElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.selfClosing = True
     def render(self):
-        return "\n" * self.gap
+        yield "\n" * self.gap
 
 
 class TextElement:
     def __init__(self, text, parent=None):
-        self.text = re.sub('^\\s*',"", text) #remove pre whitespace
-        self.text = re.sub("\\s{2,}$", " ", self.text) #remove excess whitespace after
-        self.text = self.text.replace("\n", "") #no new lines
         self.parent = parent
+        self.text = text
+        if self.parent.whitespace == "auto":
+            self.text = re.sub('^\\s*',"", self.text) #remove pre whitespace
+            self.text = re.sub("\\s{2,}$", " ", self.text) #remove excess whitespace after
+            self.text = self.text.replace("\n", "") #no new lines
         self.styles = self.parent.styles
 
+    def _calculateX(self):
+        pos = self.parent.x
+        if pos == "auto": return 0
+        if type(pos) == int or pos.isnumeric(): return int(pos)
+        if pos == "center":
+            return cols // 2 - len(self.text)
+
+
+    def _calculateNewLines(self):
+        return "", ""
+
+    def preRender(self, topLines):
+        x = self._calculateX()
+        if not x: yield ""
+        else: yield f"\033[{x}G"
+
     def render(self):
-        return self.text + "\033[0m"
+        if self.parent.textCase in ("capital", "upper"):
+            yield self.text.upper()
+        elif self.parent.textCase in ("lowercase", "lower"):
+            yield self.text.lower()
+        else: yield self.text + "\033[0m"
+
+    def postRender(self, bottomLines):
+        yield ""
 
     def __repr__(self):
         return f'{self.text}'
@@ -236,10 +280,13 @@ def parseChildren(element: Element):
     text = ""
     for child in element.children:
         for style in child.parent.styles:
-            text += f'\033[{style}m'
-        for style in child.styles:
-            text += f'\033[{style}m'
-        text += child.render()
+            for r in Element.renderStyle(style):
+                text += r
+        topLines, bottomLines = child._calculateNewLines()
+        for t in child.preRender(topLines):
+            text += t
+        for t in child.render(): text += t
+        for t in child.postRender(bottomLines): text += t
     return text
 
 SELF_CLOSING_TAGS = ("br", "hr")
