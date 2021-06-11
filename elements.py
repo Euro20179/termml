@@ -1,6 +1,7 @@
 from typing import List
 import re
 import math
+from os import system
 from shutil import get_terminal_size
 
 cols, lines = get_terminal_size()
@@ -155,6 +156,8 @@ class Element:
         name, value = style
         if name in ("fg", "bg", "text-style"): 
             yield f"\033[{value}m"
+        elif name == "cursor-location":
+            yield f'\033[{value}'
 
     def preRender(self, topLines):
         for style in self.styles:
@@ -235,6 +238,12 @@ class BreakElement(Element):
     def render(self):
         yield "\n" * self.gap
 
+class ClearElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        system("clear")
+        self.selfClosing = True
+
 
 class TextElement:
     def __init__(self, text, parent=None):
@@ -289,4 +298,4 @@ def parseChildren(element: Element):
         for t in child.postRender(bottomLines): text += t
     return text
 
-SELF_CLOSING_TAGS = ("br", "hr")
+SELF_CLOSING_TAGS = ("br", "hr", "clear")
