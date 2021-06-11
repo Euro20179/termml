@@ -250,8 +250,7 @@ class TextElement:
         self.parent = parent
         self.text = text
         if self.parent.whitespace == "auto":
-            self.text = re.sub('^\\s*',"", self.text) #remove pre whitespace
-            self.text = re.sub("\\s{2,}$", " ", self.text) #remove excess whitespace after
+            self.text = re.sub('\\s{2,}',"", self.text) #remove pre whitespace
             self.text = self.text.replace("\n", "") #no new lines
         self.styles = self.parent.styles
 
