@@ -1,9 +1,12 @@
 # TML
 
-tml is a markup language specifically designed to be displayed in terminals, it is interpreted at runtime with `main.py` however you can write the output to a file, although it will be missing features.
+tml is a markup language specifically designed to be displayed in terminals, it is interpreted at runtime with `tml.py` however you can write the output to a file, although it will be missing features.
 
 Features missing when not interprated at runtime
 * hr (horizontal rules), the length is calculated at runtime, so if written, the line may be too long/short
+* title, the center position is calculated at runtime, may be off when written to a file
+
+### Example
 
 a sample tml file
 ```tml
@@ -13,3 +16,6 @@ a sample tml file
 <br>
 <i>some italic text</i>
 ```
+
+### How it works
+the interprater uses python's builtin html.parser module to parse html, therefore comments, entities (`&lt;`), and anything else like that should work

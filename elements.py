@@ -132,6 +132,8 @@ class Element:
                 self.textCase = value
             elif attr == "x":
                 self.x = stringToInt(value)
+            elif attr == "cursor-location":
+                self.styles.append(("cursor-location", value))
 
     def addChild(self, element):
         self.children.append(element) 
