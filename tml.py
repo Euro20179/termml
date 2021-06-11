@@ -1,3 +1,4 @@
+#!/bin/python
 import parser
 import sys
 import shutil
