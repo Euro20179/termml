@@ -77,7 +77,8 @@ class Element:
     def addChild(self, element):
         self.children.append(element) 
 
-    def render(self): return ""
+    def render(self):
+        return parseChildren(self)
 
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
