@@ -2,8 +2,6 @@ import parser
 import sys
 import shutil
 
-lines, cols = shutil.get_terminal_size()
-
 try: file = sys.argv[1]
 except Exception:
     print("No file given (use - for stdin)")

@@ -1,7 +1,9 @@
 from html.parser import HTMLParser
 from typing import List
 from elements import *
+from shutil import get_terminal_size
 
+cols, lines = get_terminal_size()
 class TMLParser(HTMLParser):
     currTag = document
     def handle_starttag(self, tag, attrs):
@@ -15,12 +17,13 @@ class TMLParser(HTMLParser):
         elif tag in ("s", "strikethrough", "del"): e = StrikethroughElement(tag, attrs, parent=self.currTag)
         elif tag == "p": e = ParagraphElement(tag, attrs, parent=self.currTag)
         elif tag == "br": e = BreakElement(tag, attrs, parent=self.currTag)
+        elif tag == "hr": e = HRElement(cols, tag, attrs, parent=self.currTag)
         else: e = Element(tag, attrs, parent=self.currTag)
         self.currTag.addChild(e)
         if not e.selfClosing: self.currTag = e
 
     def handle_endtag(self, tag):
-        self.currTag = self.currTag.parent
+        if tag not in SELF_CLOSING_TAGS: self.currTag = self.currTag.parent
 
     def handle_data(self, data):
         self.currTag.addChild(TextElement(data, self.currTag))
