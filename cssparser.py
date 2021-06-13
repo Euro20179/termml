@@ -206,6 +206,4 @@ def parseStyleSheet(fp):
     l.feed(p.tokens)
     for rule in l.ruleList:
         GLOBAL_STYLES[(rule.selectorType, rule.selectorValue)] = rule.properties
-    print(GLOBAL_STYLES)
-
-parseStyleSheet("sample.css")
+    return GLOBAL_STYLES

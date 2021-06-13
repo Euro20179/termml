@@ -299,6 +299,14 @@ class ClearElement(Element):
         system("clear")
         self.selfClosing = True
 
+class CSSElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for k, v in self.attrs:
+            if k == "href":
+                parseStyleSheet(v)
+                break
+        self.selfClosing = True
 
 class TextElement:
     def __init__(self, text, parent=None):
@@ -353,4 +361,4 @@ def parseChildren(element: Element):
         for t in child.postRender(bottomLines): text += t
     return text
 
-SELF_CLOSING_TAGS = ("br", "hr", "clear")
+SELF_CLOSING_TAGS = ("br", "hr", "clear", "css")

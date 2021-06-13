@@ -11,6 +11,7 @@ elements that do nothing:
 
 <head, class="yes">
     <!--clear and start 10 lines down-->
+    <css href="sample.css" />
     <clear />
     <start cursor-location="10B" />
 </head>

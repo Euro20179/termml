@@ -1,6 +1,14 @@
+//this is a comment
+//there are only 3 types of selectors
+//#id
+//.class
+//tag
+//currently you cannot combine selectors, and you cannot have multiple selectors
 
-.upper{
-    text-case: upper;
+title{
+    //currently supported colors:
+    //31m-39m
+    //#xxx
+    //#xxxxxx
     color: 31m;
-    text-style: dim;
 }
