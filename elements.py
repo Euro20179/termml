@@ -3,6 +3,7 @@ import re
 import math
 from os import system
 from shutil import get_terminal_size
+from cssparser import parseStyleSheet, GLOBAL_STYLES
 
 cols, lines = get_terminal_size()
 
@@ -46,7 +47,7 @@ class Document:
         self.Parent = None
         self.children = children
         self.innerHTML = ""
-        self.styles = tuple()
+        self.styles = {}
         self.textCase = "auto"
         self.x = "auto"
         self.whitespace = "auto"
@@ -60,7 +61,7 @@ class Document:
 
 document = Document([])
 
-def parseColor(color):
+def parseColor(color, fg=True):
     if color[-1] == "m":
         return color.strip("m")
     elif color[0] == "#":
@@ -70,7 +71,7 @@ def parseColor(color):
             r = int(r, 16) * math.floor(256 / 15)
             g = int(g, 16) * math.floor(256 / 15)
             b = int(b, 16) * math.floor(256 / 15)
-            return f'38;2;{r};{g};{b}'
+            return f'38;2;{r};{g};{b}' if fg else f'48;2;{r};{g};{b}'
 
 def stringToInt(string, default=0):
     if string.isnumeric():
@@ -83,7 +84,8 @@ class Element:
         self.attrs = attrs
         self.parent = parent
         self.children: List[Element] = children or []
-        self.styles = []
+        self._class = ""
+        self.styles = {}
         self.gap = kwargs.get("gap") or 0 #the multiplier for the gap, 1 is normal 2, is twice the default
         self.bottomGap = kwargs.get("bottomGap") or 0
         self.topGap = kwargs.get("topGap") or 0
@@ -92,34 +94,48 @@ class Element:
         self.whitespace = "auto"
         self._parseAttrs()
         self.selfClosing = False
+        self.parseGlobalStyles()
 
-    def _parseAttrs(self):
-        for attr, value in self.attrs:
+    def parseGlobalStyles(self):
+        for selector, properties in GLOBAL_STYLES.items():
+            if self.matchesSelector(selector):
+                self.styles |= properties
+
+    def _parseAttrs(self, attrs=None):
+        for attr, value in (attrs or self.attrs):
             attr = attr.lower()
             if attr == "color":
                 color = COLORS.get(value)
                 if not color: color = parseColor(value)
-                self.styles.append(("fg", color))
+                self.styles["color"] = color
             elif attr in ("background", "bg", "background-color", "bg-color"):
                 color = BACKGROUND_COLORS.get(value)
                 if not color: color = parseColor(value)
-                self.styles.append(("bg", color))
+                self.styles["background"] = color
             elif attr in ("bold", "b"):
-                self.styles.append(("text-style", TEXT_STYLES["bold"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["bold"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["bold"]]
             elif attr in ("d", "dim"):
-                self.styles.append(("text-style", TEXT_STYLES["dim"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["dim"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["dim"]]
             elif attr in ("italic", "i"): 
-                self.styles.append(("text-style", TEXT_STYLES["italic"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["italic"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["italic"]]
             elif attr in ("underline", "u"):
-                self.styles.append(("text-style", TEXT_STYLES["underline"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["underline"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["underline"]]
             elif attr == "blink":
-                self.styles.append(("text-style", TEXT_STYLES["blinking"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["blink"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["blink"]]
             elif attr in ("negative", "inverse"):
-                self.styles.append(("text-style", TEXT_STYLES["inverse"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["inverse"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["inverse"]]
             elif attr in ("invisible", "inv", "hidden"):
-                self.styles.append(("text-style", TEXT_STYLES["invisible"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["invisible"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["invisible"]]
             elif attr in ("strikethrough", "s"):
-                self.styles.append(("text-style", TEXT_STYLES["strikethrough"]))
+                try: self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
+                except KeyError: self.styles["text-style"] = [TEXT_STYLES["strikethrough"]]
             elif attr == "whitespace":
                 self.whitespace = value
             elif attr == "gap":
@@ -133,7 +149,9 @@ class Element:
             elif attr == "x":
                 self.x = stringToInt(value)
             elif attr == "cursor-location":
-                self.styles.append(("cursor-location", value))
+                self.styles["cursor-location"] = value
+            elif attr == "class": 
+                self._class = value
 
     def addChild(self, element):
         self.children.append(element) 
@@ -155,16 +173,31 @@ class Element:
 
     @staticmethod
     def renderStyle(style):
+        if not isinstance(style, list) and not isinstance(style, tuple): return ""
         name, value = style
-        if name in ("fg", "bg", "text-style"): 
-            yield f"\033[{value}m"
+        if name in ("color", "background", "text-style"): 
+            if isinstance(value, list):
+                for v in value:
+                    yield f"\033[{v}m"
+            else: yield f"\033[{value}m"
         elif name == "cursor-location":
-            yield f'\033[{value}'
+            if isinstance(value, list):
+                for v in value:
+                    yield f"\033[{v}m"
+            else: yield f'\033[{value}'
 
     def preRender(self, topLines):
-        for style in self.styles:
+        for style in self.styles.items():
             yield from Element.renderStyle(style)
         yield topLines
+
+    def matchesSelector(self, selector):
+        t, value = selector
+        if t == "tag" and self.tag == value:
+            return True
+        elif t == "class" and self._class == value:
+            return True
+        return False
 
     def render(self):
         yield parseChildren(self)
@@ -178,19 +211,22 @@ class Element:
 class BoldElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["bold"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["bold"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["bold"]]
 
 class TitleElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, gap=1, textCase="upper", x="center")
-        self.styles.append(("text-style", TEXT_STYLES["underline"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["underline"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["underline"]]
 
 class HRElement(Element):
     def __init__(self, cols, *args, **kwargs):
         super().__init__(*args, **kwargs, gap=1)
         self.selfClosing = True
         self.cols = cols
-        self.styles.append(("text-style", "9"))
+        try: self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["strikethrough"]]
 
     def render(self):
         yield " " * self.cols
@@ -198,36 +234,45 @@ class HRElement(Element):
 class DimElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["dim"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["dim"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["dim"]]
+
 class ItalicElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["italic"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["italic"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["italic"]]
 
 class UnderlineElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["underline"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["underline"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["underline"]]
 
 class BlinkElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["blinking"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["underline"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["underline"]]
 
 class ReverseElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["inverse"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["inverse"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["inverse"]]
+        
 
 class InvisibleElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["invisible"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["invisible"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["invisible"]]
 
 class StrikethroughElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.styles.append(("text-style", TEXT_STYLES["strikethrough"]))
+        try: self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
+        except KeyError: self.styles["text-style"] = [TEXT_STYLES["strikethrough"]]
 
 class ParagraphElement(Element):
     def __init__(self, *args, **kwargs):
@@ -290,7 +335,7 @@ class TextElement:
 def parseChildren(element: Element):
     text = ""
     for child in element.children:
-        for style in child.parent.styles:
+        for style in child.parent.styles.items():
             for r in Element.renderStyle(style):
                 text += r
         topLines, bottomLines = child._calculateNewLines()

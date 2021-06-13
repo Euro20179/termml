@@ -9,7 +9,7 @@ elements that do nothing:
 
 <!DOCTYPE tml>
 
-<head>
+<head, class="yes">
     <!--clear and start 10 lines down-->
     <clear />
     <start cursor-location="10B" />
@@ -17,6 +17,7 @@ elements that do nothing:
 
 <main>
     <title>Hello :)</title>
+    <p class="upper">test</p>
     <p>here is some <b>bolded and <i>italic</i> </b>text</p>
     <p color="red"> here is some red text</p>
     <p b i s>here is some bold-italic-strikethrough text</p>
