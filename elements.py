@@ -65,13 +65,20 @@ def parseColor(color, fg=True):
     if color[-1] == "m":
         return color.strip("m")
     elif color[0] == "#":
-        color = color[1:]
-        if len(color) == 3:
-            r, g, b = color
-            r = int(r, 16) * math.floor(256 / 15)
-            g = int(g, 16) * math.floor(256 / 15)
-            b = int(b, 16) * math.floor(256 / 15)
+        try:
+            color = color[1:]
+            if len(color) == 3:
+                r, g, b = color
+                r = int(r, 16) * math.floor(256 / 15)
+                g = int(g, 16) * math.floor(256 / 15)
+                b = int(b, 16) * math.floor(256 / 15)
+            elif len(color) in (6, 8):
+                r = int(color[0:2], 16)
+                g = int(color[2:4], 16)
+                b = int(color[4:6], 16)
             return f'38;2;{r};{g};{b}' if fg else f'48;2;{r};{g};{b}'
+        except Exception: pass
+    return "{{INVALID COLOR}"
 
 def stringToInt(string, default=0):
     if string.isnumeric():
@@ -99,7 +106,10 @@ class Element:
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
             if self.matchesSelector(selector):
-                self.styles |= properties
+                for attr, value in properties.items():
+                    if attr != "text-style":
+                        value = value[0]
+                    self._parseAttrs([(attr, value)])
 
     def _parseAttrs(self, attrs=None):
         for attr, value in (attrs or self.attrs):
@@ -110,32 +120,30 @@ class Element:
                 self.styles["color"] = color
             elif attr in ("background", "bg", "background-color", "bg-color"):
                 color = BACKGROUND_COLORS.get(value)
-                if not color: color = parseColor(value)
+                if not color: color = parseColor(value, False)
                 self.styles["background"] = color
-            elif attr in ("bold", "b"):
-                try: self.styles["text-style"].append(TEXT_STYLES["bold"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["bold"]]
-            elif attr in ("d", "dim"):
-                try: self.styles["text-style"].append(TEXT_STYLES["dim"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["dim"]]
-            elif attr in ("italic", "i"): 
-                try: self.styles["text-style"].append(TEXT_STYLES["italic"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["italic"]]
-            elif attr in ("underline", "u"):
-                try: self.styles["text-style"].append(TEXT_STYLES["underline"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["underline"]]
-            elif attr == "blink":
-                try: self.styles["text-style"].append(TEXT_STYLES["blink"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["blink"]]
-            elif attr in ("negative", "inverse"):
-                try: self.styles["text-style"].append(TEXT_STYLES["inverse"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["inverse"]]
-            elif attr in ("invisible", "inv", "hidden"):
-                try: self.styles["text-style"].append(TEXT_STYLES["invisible"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["invisible"]]
-            elif attr in ("strikethrough", "s"):
-                try: self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
-                except KeyError: self.styles["text-style"] = [TEXT_STYLES["strikethrough"]]
+            elif attr == "text-style":
+                self.styles["text-style"] = []
+                if isinstance(value, str):
+                    value = value.split(",")
+                for v in value:
+                    v = v.strip()
+                    if v in ("bold", "b"):
+                        self.styles["text-style"].append(TEXT_STYLES["bold"])
+                    elif v in ("d", "dim"):
+                        self.styles["text-style"].append(TEXT_STYLES["dim"])
+                    elif v in ("i", "italic"):
+                        self.styles["text-style"].append(TEXT_STYLES["italic"])
+                    elif v in ("u", "underline"):
+                        self.styles["text-style"].append(TEXT_STYLES["underline"])
+                    elif v == "blink":
+                        self.styles["text-style"].append(TEXT_STYLES["blink"])
+                    elif v in ("negative", "inverse"):
+                        self.styles["text-style"].append(TEXT_STYLES["inverse"])
+                    elif v in ("invisible", "inv", "hidden"):
+                        self.styles["text-style"].append(TEXT_STYLES["invisible"])
+                    elif v in ("s", "strikethrough"):
+                        self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
             elif attr == "whitespace":
                 self.whitespace = value
             elif attr == "gap":
