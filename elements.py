@@ -251,6 +251,7 @@ class TextElement:
     def __init__(self, text, parent=None):
         self.parent = parent
         self.text = text
+        self.tag = "textNode"
         if self.parent.whitespace == "auto":
             self.text = re.sub('\\s{2,}',"", self.text) #remove pre whitespace
             self.text = self.text.replace("\n", "") #no new lines
