@@ -218,6 +218,17 @@ class Element:
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
 
+class ListElement(Element):
+    pass
+
+class OrderedListElement(Element):
+    def __init__(self, *args, count=1, **kwargs):
+        super().__init__(*args, **kwargs, gap=1)
+        self.count = count
+
+    def preRender(self, topLines):
+        yield str(self.count) + " "
+
 class BoldElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

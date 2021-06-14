@@ -21,6 +21,14 @@ class TMLParser(HTMLParser):
         elif tag == "title": e = TitleElement(tag, attrs, parent=self.currTag)
         elif tag == "clear": e = ClearElement(tag, attrs, parent=self.currTag)
         elif tag == "css": e = CSSElement(tag, attrs, parent=self.currTag)
+        elif tag == "l": e = ListElement(tag, attrs, parent=self.currTag)
+        elif tag == "oli": 
+            if self.currTag.tag == "l":
+                try: count = self.currTag.children[-1].count + 1
+                except IndexError: count = 1
+                except AttributeError: count = 1
+            else: count = 1
+            e = OrderedListElement(tag, attrs, parent=self.currTag, count=count)
         else: e = Element(tag, attrs, parent=self.currTag)
         self.currTag.addChild(e)
         if not e.selfClosing: self.currTag = e
@@ -29,4 +37,5 @@ class TMLParser(HTMLParser):
         if tag not in SELF_CLOSING_TAGS: self.currTag = self.currTag.parent
 
     def handle_data(self, data):
+        if data == "\n": return
         self.currTag.addChild(TextElement(data, self.currTag))

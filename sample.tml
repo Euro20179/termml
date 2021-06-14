@@ -23,3 +23,9 @@ elements that do nothing:
     <p color="red"> here is some red text</p>
     <p text-style="b,s,i">here is some bold-italic-strikethrough text</p>
 </main>
+
+<l>
+<oli>yes</oli>
+<oli>hi</oli>
+<oli>hi2</oli>
+</l>
