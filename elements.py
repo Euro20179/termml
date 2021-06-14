@@ -113,6 +113,9 @@ class Element:
         self.selfClosing = False
         self.parseGlobalStyles()
 
+    def getElementChildren(self):
+        return tuple(x for x in self.children if not isinstance(x, TextElement))
+
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
             if self.matchesSelector(selector):

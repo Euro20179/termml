@@ -32,7 +32,7 @@ class TMLParser(HTMLParser):
             e =  UnorderedListElement(tag, attrs, parent=self.currTag, topGap=topGap)
         elif tag == "oli": 
             if self.currTag.tag == "l":
-                try: count = self.currTag.children[-1].count + 1
+                try: count = self.currTag.getElementChildren()[-1].count + 1
                 except IndexError: count = 1
                 except AttributeError: count = 1
             else: count = 1
