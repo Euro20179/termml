@@ -1,6 +1,7 @@
 from typing import List
 import re
 import math
+import random
 from os import system
 from shutil import get_terminal_size
 from cssparser import parseStyleSheet, GLOBAL_STYLES
@@ -155,7 +156,8 @@ class Element:
             elif attr == "text-case":
                 self.textCase = value
             elif attr == "x":
-                self.x = stringToInt(value)
+                if value == "center": self.x = "center"
+                else: self.x = stringToInt(value)
             elif attr == "cursor-location":
                 self.styles["cursor-location"] = value
             elif attr == "class": 
@@ -339,6 +341,10 @@ class TextElement:
             yield self.text.upper()
         elif self.parent.textCase in ("lowercase", "lower"):
             yield self.text.lower()
+        elif self.parent.textCase == "random":
+            yield "".join((x.upper() if random.random() > .5 else x.lower() for x in self.text))
+        elif self.parent.textCase == "mix":
+            yield "".join((x.upper() if i % 2 == 0 else x.lower() for i, x in enumerate(self.text)))
         else: yield self.text + "\033[0m"
 
     def postRender(self, bottomLines):

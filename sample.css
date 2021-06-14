@@ -4,6 +4,7 @@
 //.class
 //tag
 //currently you cannot combine selectors, and you cannot have multiple selectors
+//currently specificity is not a thing
 
 title{
     //currently supported colors:
@@ -11,4 +12,8 @@ title{
     //#xxx
     //#xxxxxx
     color: 31m;
+}
+
+.upper{
+    text-case: upper;
 }
