@@ -18,6 +18,7 @@ class TOKENS(Enum):
     colon = 7
     endProperty = 8
     comment = 12
+    pseudoClassValue = 13
 
 class Token:
     def __init__(self, _type, value):
@@ -57,24 +58,26 @@ class CSSParser:
                 self.tokens.append(Token(TOKENS.closeCurly, "}"))
                 inBlock = False
                 selectorType = ""
-            elif char == ":" and inBlock:
+            elif char == ":":
                 self.tokens.append(Token(TOKENS.colon, ":"))
             elif char == "," and inBlock:
                 self.tokens.append(Token(TOKENS.comma, ","))
             elif char == ";" and inBlock:
                 self.tokens.append(Token(TOKENS.endProperty, ";"))
             elif char in printable and inBlock and self.tokens[-1].type in (TOKENS.colon, TOKENS.comma):
-                self.tokens.append(Token(TOKENS.value, self.createValue()))
+                self.tokens.append(Token(TOKENS.value, self.createValue(exclude=";,}")))
             elif char in ascii_letters + "-" and inBlock:
                 self.tokens.append(Token(TOKENS.propertyName, self.createPropertyName()))
             elif char == "/" and self.previewNext() == "/":
                 self.tokens.append(Token(TOKENS.comment, self.createComment()))
                 next(self)
-            elif char in ascii_letters + "-" and not inBlock:
+            elif char in ascii_letters + "-" and not inBlock and self.tokens[-1].type != TOKENS.colon:
                 if not selectorType: tt = TOKENS.tagName
                 elif selectorType == "class": tt = TOKENS.className
                 elif selectorType == "id": tt = TOKENS.idName
-                self.tokens.append(Token(tt, self.createValue()))
+                self.tokens.append(Token(tt, self.createValue(exclude=":;,{ ")))
+            elif char in ascii_letters + "-" and not inBlock and self.tokens[-1].type == TOKENS.colon:
+                self.tokens.append(Token(TOKENS.pseudoClassValue, self.createValue(exclude="{: ")))
 
     def createComment(self):
         text = ""
@@ -85,9 +88,9 @@ class CSSParser:
         self.back()
         return text
 
-    def createValue(self):
+    def createValue(self, exclude=";,{"):
         name = ""
-        while self.currChar not in ";,{":
+        while self.currChar not in exclude:
             name += self.currChar
             try: next(self)
             except StopIteration: break
@@ -125,6 +128,7 @@ class Rule:
         self.selectorType = selectorType
         self.selectorValue = selectorValue
         self.properties = properties
+        self.pseudoClasses = []
 
     def __repr__(self):
         return f"""{self.selectorType}: {self.selectorValue}{{
@@ -157,6 +161,9 @@ class CSSLexer:
             rule.selectorType = "class"
         rule.selectorValue = self.currTok.value
         next(self)
+        if self.currTok.type == TOKENS.colon:
+            next(self)
+            rule.pseudoClasses = self.pseudoClass()
         rule.properties = self.rules()
 
     def rules(self):
@@ -174,6 +181,16 @@ class CSSLexer:
             next(self)
         self.back()
         return properties
+
+    def pseudoClass(self):
+        Class = [self.currTok.value]
+        next(self)
+        if self.currTok.type == TOKENS.colon:
+            next(self)
+            Class += self.pseudoClass()
+        return Class
+
+
          
     def back(self):
         self._i -= 1
@@ -186,6 +203,7 @@ class CSSLexer:
                 self.selector()
             elif token.type == TOKENS.tagName:
                 self.selector()
+                self.pseudoClass()
 
     def __iter__(self):
         return self
@@ -197,7 +215,6 @@ class CSSLexer:
         return self.tokens[self._i]
 
 
-
 p = CSSParser()
 l = CSSLexer()
 def parseStyleSheet(fp):
@@ -206,5 +223,5 @@ def parseStyleSheet(fp):
     p.feed(text)
     l.feed(p.tokens)
     for rule in l.ruleList:
-        GLOBAL_STYLES[(rule.selectorType, rule.selectorValue)] = rule.properties
+        GLOBAL_STYLES[(rule.selectorType, rule.selectorValue, tuple(rule.pseudoClasses))] = rule.properties
     return GLOBAL_STYLES

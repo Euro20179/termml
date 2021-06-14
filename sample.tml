@@ -11,13 +11,14 @@ elements that do nothing:
 <head, class="yes">
     <!--clear and start 10 lines down-->
     <css href="sample.css" />
-    <clear />
+    <!--<clear />-->
 </head>
 
 <main>
+    <p class="upper">test</p>
     <title>Hello :)</title>
 
-    <p class="upper">test</p>
+    <p class="upper">test2</p>
     <p>here is some <b>bolded and <i>italic</i> </b>text</p>
     <p color="red"> here is some red text</p>
     <p text-style="b,s,i">here is some bold-italic-strikethrough text</p>
