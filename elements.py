@@ -80,7 +80,7 @@ def parseColor(color, fg=True):
                 b = int(color[4:6], 16)
             return f'38;2;{r};{g};{b}' if fg else f'48;2;{r};{g};{b}'
         except Exception: pass
-    return "{{INVALID COLOR}"
+    return f"{{INVALID COLOR: {color}}}"
 
 def stringToInt(string, default=0):
     if string.isnumeric():
@@ -103,6 +103,8 @@ class Element:
         self.whitespace = "auto"
         self.preText = kwargs.get('preText') or ""
         self.preText = str(self.preText)
+        self.postText = kwargs.get("postText") or ""
+        self.postText = str(self.postText)
         self._parseAttrs()
         self.selfClosing = False
         self.parseGlobalStyles()
@@ -167,6 +169,8 @@ class Element:
                 self._class = value
             elif attr == "pre-text":
                 self.preText = value
+            elif attr == "post-text":
+                self.postText = value
 
     def addChild(self, element):
         self.children.append(element) 
@@ -208,6 +212,9 @@ class Element:
 
     def renderPreText(self):
         yield self.preText
+
+    def renderPostText(self):
+        yield self.postText
 
     def matchesSelector(self, selector):
         t, value = selector
@@ -360,6 +367,9 @@ class TextElement:
     def renderPreText(self):
         yield ""
 
+    def renderPostText(self):
+        yield ""
+
     def render(self):
         if self.parent.textCase in ("capital", "upper"):
             yield self.text.upper()
@@ -385,10 +395,10 @@ def parseChildren(element: Element):
             for r in Element.renderStyle(style):
                 text += r
         topLines, bottomLines = child._calculateNewLines()
-        for t in child.preRender(topLines):
-            text += t
+        for t in child.preRender(topLines): text += t
         for t in child.renderPreText(): text += t
         for t in child.render(): text += t
+        for t in child.renderPostText(): text += t
         for t in child.postRender(bottomLines): text += t
     return text
 
