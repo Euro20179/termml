@@ -32,3 +32,5 @@ elements that do nothing:
 <uli pre-text="no">hik</uli>
 <uli pre-text="no">ok</uli>
 
+
+<a link-color="red" href="www.google.com">hi</a>

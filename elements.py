@@ -80,6 +80,9 @@ def parseColor(color, fg=True):
                 b = int(color[4:6], 16)
             return f'38;2;{r};{g};{b}' if fg else f'48;2;{r};{g};{b}'
         except Exception: pass
+    elif color in COLORS.keys():
+        if fg: return COLORS[color]
+        else: return BACKGROUND_COLORS[color]
     return f"{{INVALID COLOR: {color}}}"
 
 def stringToInt(string, default=0):
@@ -105,6 +108,7 @@ class Element:
         self.preText = str(self.preText)
         self.postText = kwargs.get("postText") or ""
         self.postText = str(self.postText)
+        self.specialAttrs = kwargs.get("specialAttrs", {})
         self._parseAttrs()
         self.selfClosing = False
         self.parseGlobalStyles()
@@ -119,6 +123,7 @@ class Element:
 
     def _parseAttrs(self, attrs=None):
         for attr, value in (attrs or self.attrs):
+            value = str(value)
             attr = attr.lower()
             if attr == "color":
                 color = COLORS.get(value)
@@ -171,9 +176,17 @@ class Element:
                 self.preText = value
             elif attr == "post-text":
                 self.postText = value
+            elif attr in self.specialAttrs.keys():
+                self.specialAttrs[attr](value)
 
     def addChild(self, element):
         self.children.append(element) 
+
+    #this will get called after inline styles are applied,
+    #so it checks to make sure that that isn't true
+    def _setInitialColor(self, color):
+        if not self.styles.get("color"):
+            self.styles["color"] = color
 
     def _calculateNewLines(self, fallback=""):
         if self.topGap != 0:
@@ -232,6 +245,19 @@ class Element:
 
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
+
+class AnchorElement(Element):
+    def __init__(self, *args, **kwargs):
+        self.linkColor = COLORS["blue"]
+        super().__init__(*args, specialAttrs={
+            "link-color": lambda v: setattr(self, "linkColor", parseColor(v)),
+            "href": lambda v: setattr(self, "href", v)
+            }, **kwargs)
+        self._setInitialColor(COLORS["blue"])
+
+    def render(self):
+        if self.href:
+            yield f'[{parseChildren(self)}\033[{self.styles["color"]}m]\033[{self.linkColor}m({self.href})\033[0m'
 
 class ListElement(Element):
     pass
@@ -331,11 +357,7 @@ class ClearElement(Element):
 
 class CSSElement(Element):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for k, v in self.attrs:
-            if k == "href":
-                parseStyleSheet(v)
-                break
+        super().__init__(*args, specialAttrs={"href": lambda v: setattr(self, "href", v)}, **kwargs)
         self.selfClosing = True
 
 class TextElement:

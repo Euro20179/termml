@@ -21,6 +21,7 @@ class TMLParser(HTMLParser):
         elif tag == "title": e = TitleElement(tag, attrs, parent=self.currTag)
         elif tag == "clear": e = ClearElement(tag, attrs, parent=self.currTag)
         elif tag == "css": e = CSSElement(tag, attrs, parent=self.currTag)
+        elif tag == "a": e = AnchorElement(tag, attrs, parent=self.currTag)
         elif tag in ("l", "list"): e = ListElement(tag, attrs, parent=self.currTag)
         elif tag == "uli": 
             if self.currTag.tag == "l":
