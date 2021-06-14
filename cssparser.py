@@ -56,6 +56,7 @@ class CSSParser:
             elif char == "}":
                 self.tokens.append(Token(TOKENS.closeCurly, "}"))
                 inBlock = False
+                selectorType = ""
             elif char == ":" and inBlock:
                 self.tokens.append(Token(TOKENS.colon, ":"))
             elif char == "," and inBlock:

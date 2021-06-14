@@ -357,7 +357,7 @@ class ClearElement(Element):
 
 class CSSElement(Element):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, specialAttrs={"href": lambda v: setattr(self, "href", v)}, **kwargs)
+        super().__init__(*args, specialAttrs={"href": lambda v: parseStyleSheet(v)}, **kwargs)
         self.selfClosing = True
 
 class TextElement:

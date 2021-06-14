@@ -2,7 +2,6 @@
 <!--
 elements that do nothing:
     head
-    start (only used for the attribute)
     main
     !DOCTYPE
 -->
@@ -13,24 +12,25 @@ elements that do nothing:
     <!--clear and start 10 lines down-->
     <css href="sample.css" />
     <clear />
-    <start cursor-location="10B" />
 </head>
 
 <main>
     <title>Hello :)</title>
+
     <p class="upper">test</p>
     <p>here is some <b>bolded and <i>italic</i> </b>text</p>
     <p color="red"> here is some red text</p>
     <p text-style="b,s,i">here is some bold-italic-strikethrough text</p>
+
+    <l>
+        <oli>yes</oli>
+	<oli>hi</oli>
+    	<oli>hi2</oli>
+    </l>
+
+    <uli pre-text="no">hik</uli>
+    <uli pre-text="no">ok</uli>
+
+    <a href="www.google.com">hi</a>
 </main>
 
-<l>
-<oli>yes</oli>
-<oli>hi</oli>
-<oli>hi2</oli>
-</l>
-<uli pre-text="no">hik</uli>
-<uli pre-text="no">ok</uli>
-
-
-<a link-color="red" href="www.google.com">hi</a>

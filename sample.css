@@ -17,3 +17,8 @@ title{
 .upper{
     text-case: upper;
 }
+
+a{
+    text-case: upper;
+    color: white;
+}
