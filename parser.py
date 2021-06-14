@@ -21,14 +21,21 @@ class TMLParser(HTMLParser):
         elif tag == "title": e = TitleElement(tag, attrs, parent=self.currTag)
         elif tag == "clear": e = ClearElement(tag, attrs, parent=self.currTag)
         elif tag == "css": e = CSSElement(tag, attrs, parent=self.currTag)
-        elif tag == "l": e = ListElement(tag, attrs, parent=self.currTag)
+        elif tag in ("l", "list"): e = ListElement(tag, attrs, parent=self.currTag)
+        elif tag == "uli": 
+            if self.currTag.tag == "l":
+                try: topGap = 0 if self.currTag.children[-1].tag == "uli" else 1
+                except IndexError: topGap = 1
+            else: topGap = 1
+            e =  UnorderedListElement(tag, attrs, parent=self.currTag, topGap=topGap)
         elif tag == "oli": 
             if self.currTag.tag == "l":
                 try: count = self.currTag.children[-1].count + 1
                 except IndexError: count = 1
                 except AttributeError: count = 1
             else: count = 1
-            e = OrderedListElement(tag, attrs, parent=self.currTag, count=count)
+            #setting this top gap, puts 2 olis close to each other
+            e = OrderedListElement(tag, attrs, parent=self.currTag, count=count, topGap=0 if count > 1 else 1)
         else: e = Element(tag, attrs, parent=self.currTag)
         self.currTag.addChild(e)
         if not e.selfClosing: self.currTag = e

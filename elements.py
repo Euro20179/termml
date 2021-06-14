@@ -53,6 +53,7 @@ class Document:
         self.x = "auto"
         self.whitespace = "auto"
         self.tag = "!DOCUMENT"
+        self.preText = ""
 
     def addChild(self, element):
         self.children.append(element)
@@ -100,6 +101,8 @@ class Element:
         self.textCase = kwargs.get("textCase") or "auto"
         self.x = kwargs.get("x") or "auto"
         self.whitespace = "auto"
+        self.preText = kwargs.get('preText') or ""
+        self.preText = str(self.preText)
         self._parseAttrs()
         self.selfClosing = False
         self.parseGlobalStyles()
@@ -162,6 +165,8 @@ class Element:
                 self.styles["cursor-location"] = value
             elif attr == "class": 
                 self._class = value
+            elif attr == "pre-text":
+                self.preText = value
 
     def addChild(self, element):
         self.children.append(element) 
@@ -201,6 +206,9 @@ class Element:
             yield from Element.renderStyle(style)
         yield topLines
 
+    def renderPreText(self):
+        yield self.preText
+
     def matchesSelector(self, selector):
         t, value = selector
         if t == "tag" and self.tag == value:
@@ -222,12 +230,14 @@ class ListElement(Element):
     pass
 
 class OrderedListElement(Element):
-    def __init__(self, *args, count=1, **kwargs):
-        super().__init__(*args, **kwargs, gap=1)
+    def __init__(self, *args, count=1, topGap=1, **kwargs):
         self.count = count
+        super().__init__(*args, **kwargs, bottomGap=1, topGap=topGap, preText=str(self.count) + " ")
 
-    def preRender(self, topLines):
-        yield str(self.count) + " "
+class UnorderedListElement(Element):
+    def __init__(self, *args, marker="* ", topGap=0, **kwargs):
+        self.preText = marker
+        super().__init__(*args, **kwargs, bottomGap=1, topGap=topGap)
 
 class BoldElement(Element):
     def __init__(self, *args, **kwargs):
@@ -347,6 +357,9 @@ class TextElement:
         if not x: yield ""
         else: yield f"\033[{x}G"
 
+    def renderPreText(self):
+        yield ""
+
     def render(self):
         if self.parent.textCase in ("capital", "upper"):
             yield self.text.upper()
@@ -374,6 +387,7 @@ def parseChildren(element: Element):
         topLines, bottomLines = child._calculateNewLines()
         for t in child.preRender(topLines):
             text += t
+        for t in child.renderPreText(): text += t
         for t in child.render(): text += t
         for t in child.postRender(bottomLines): text += t
     return text
