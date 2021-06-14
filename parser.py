@@ -7,6 +7,7 @@ cols, lines = get_terminal_size()
 class TMLParser(HTMLParser):
     currTag = document
     def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
         if tag in ("b", "bold", "strong"): e = BoldElement(tag, attrs, parent=self.currTag)
         elif tag in ("d", "dim"): e = DimElement(tag, attrs, parent=self.currTag)
         elif tag in ("i", "italic", "em", "emphasis"): e = ItalicElement(tag, attrs, parent=self.currTag)
