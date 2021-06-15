@@ -19,7 +19,7 @@ title{
     pre-text:hi ""yes "hi ";
 }
 
-a:last-child{
+a{
     text-case: upper;
     color: white;
 }

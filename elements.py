@@ -370,8 +370,9 @@ class ParagraphElement(Element):
 
 class BreakElement(Element):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs, topGap=1)
         self.selfClosing = True
+
     def render(self):
         yield "\n" * self.gap
 
@@ -385,6 +386,46 @@ class CSSElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, specialAttrs={"href": lambda v: parseStyleSheet(v)}, **kwargs)
         self.selfClosing = True
+
+class BlackElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["black"])
+
+class RedElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["red"])
+
+class GreenElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["green"])
+
+class YellowElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["yellow"])
+
+class BlueElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["blue"])
+
+class MagentaElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["magenta"])
+
+class CyanElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["cyan"])
+
+class WhiteElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialColor(COLORS["white"])
 
 class TextElement:
     def __init__(self, text, parent=None):

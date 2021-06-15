@@ -24,6 +24,14 @@ class TMLParser(HTMLParser):
         elif tag == "css": e = CSSElement(tag, attrs, parent=self.currTag)
         elif tag == "a": e = AnchorElement(tag, attrs, parent=self.currTag)
         elif tag in ("l", "list"): e = ListElement(tag, attrs, parent=self.currTag)
+        elif tag == "black": e = BlackElement(tag, attrs, parent=self.currTag)
+        elif tag == "red": e = RedElement(tag, attrs, parent=self.currTag)
+        elif tag == "green": e = GreenElement(tag, attrs, parent=self.currTag)
+        elif tag == "yellow": e = YellowElement(tag, attrs, parent=self.currTag)
+        elif tag == "blue": e = BlueElement(tag, attrs, parent=self.currTag)
+        elif tag == "magenta": e = MagentaElement(tag, attrs, parent=self.currTag)
+        elif tag == "cyan": e = CyanElement(tag, attrs, parent=self.currTag)
+        elif tag == "white": e = WhiteElement(tag, attrs, parent=self.currTag)
         elif tag == "uli": 
             if self.currTag.tag == "l":
                 try: topGap = 0 if self.currTag.children[-1].tag == "uli" else 1
