@@ -16,7 +16,10 @@ title{
 
 .upper:first-instance{
     text-case: upper;
-    pre-text:hi ""yes "hi ";
+}
+
+p:no-inherit{
+    x: center;
 }
 
 a{

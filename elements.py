@@ -451,7 +451,7 @@ class TextElement:
         if pos == "auto": return 0
         if type(pos) == int or pos.isnumeric(): return int(pos)
         if pos == "center":
-            return cols // 2 - len(self.text)
+            return (cols // 2) - round(len(self.text) / 2)
 
 
     def _calculateNewLines(self):
