@@ -75,7 +75,7 @@ class CSSLexer:
                 if not selectorType: tt = TOKENS.tagName
                 elif selectorType == "class": tt = TOKENS.className
                 elif selectorType == "id": tt = TOKENS.idName
-                self.tokens.append(Token(tt, self.createValue(exclude=":;,{ ")))
+                self.tokens.append(Token(tt, self.createValue(exclude=":;,{ \"'")))
             elif char in ascii_letters + "-" and not inBlock and self.tokens[-1].type == TOKENS.colon:
                 self.tokens.append(Token(TOKENS.pseudoClassValue, self.createValue(exclude="{: ")))
 
@@ -90,12 +90,25 @@ class CSSLexer:
 
     def createValue(self, exclude=";,{"):
         name = ""
-        while self.currChar not in exclude:
+        inString = ""
+        strip = True
+        while self.currChar not in exclude or inString:
+            if self.currChar in '"\'' and not inString:
+                strip = False
+                inString = self.currChar
+                try: next(self)
+                except StopIteration: return name
+                continue
+            elif inString and self.currChar == inString:
+                inString = ""
+                try: next(self)
+                except StopIteration: return name
+                continue
             name += self.currChar
             try: next(self)
             except StopIteration: break
         self.back()
-        return name.strip()
+        return name.strip() if strip else name
         
     def createPropertyName(self):
         name = ""

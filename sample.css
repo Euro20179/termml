@@ -16,6 +16,7 @@ title{
 
 .upper:first-instance{
     text-case: upper;
+    pre-text:hi ""yes "hi ";
 }
 
 a:last-child{
