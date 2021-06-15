@@ -21,6 +21,7 @@ elements that do nothing:
     <p>here is some <b>bolded and <i>italic</i> </b><span>text</span></p>
     <p color="red"> here is some red text</p>
     <p text-style="b,s,i">here is some bold-italic-strikethrough text</p>
+    <bg-red color="blue">hi</bg-red>
 
     <l>
         <oli>yes</oli>

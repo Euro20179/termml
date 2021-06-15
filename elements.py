@@ -188,6 +188,10 @@ class Element:
         if not self.styles.get("color"):
             self.styles["color"] = color
 
+    def _setInitialBGColor(self, color):
+        if not self.styles.get("background"):
+            self.styles["background"] = color
+
     def _calculateNewLines(self, fallback=""):
         if self.topGap != 0:
             topNewLines = "\n" * self.topGap
@@ -401,40 +405,80 @@ class BlackElement(Element):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["black"])
 
+class BGBlackElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["black"])
+
 class RedElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["red"])
+
+class BGRedElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["red"])
 
 class GreenElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["green"])
 
+class BGGreenElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["green"])
+
 class YellowElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["yellow"])
+
+class BGYellowElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["yellow"])
 
 class BlueElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["blue"])
 
+class BGBlueElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["blue"])
+
 class MagentaElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["magenta"])
+
+class BGMagentaElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["magenta"])
 
 class CyanElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["cyan"])
 
+class BGCyanElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["cyan"])
+
 class WhiteElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setInitialColor(COLORS["white"])
+
+class BGWhiteElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setInitialBGColor(BACKGROUND_COLORS["white"])
 
 class TextElement:
     def __init__(self, text, parent=None):

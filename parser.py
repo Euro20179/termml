@@ -32,6 +32,14 @@ class TMLParser(HTMLParser):
         elif tag == "magenta": e = MagentaElement(tag, attrs, parent=self.currTag)
         elif tag == "cyan": e = CyanElement(tag, attrs, parent=self.currTag)
         elif tag == "white": e = WhiteElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-black": e = BGBlackElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-red": e = BGRedElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-green": e = BGGreenElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-yellow": e = BGYellowElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-blue": e = BGBlueElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-magenta": e = BGMagentaElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-cyan": e = BGCyanElement(tag, attrs, parent=self.currTag)
+        elif tag == "bg-white": e = BGWhiteElement(tag, attrs, parent=self.currTag)
         elif tag == "uli": 
             if self.currTag.tag == "l":
                 try: topGap = 0 if self.currTag.children[-1].tag == "uli" else 1
