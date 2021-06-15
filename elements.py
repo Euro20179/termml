@@ -43,25 +43,6 @@ TEXT_STYLES = {
     "strikethrough": "9"
 }
 
-class Document:
-    def __init__(self, children):
-        self.Parent = None
-        self.children = children
-        self.innerHTML = ""
-        self.styles = {}
-        self.textCase = "auto"
-        self.x = "auto"
-        self.whitespace = "auto"
-        self.tag = "!DOCUMENT"
-        self.preText = ""
-
-    def addChild(self, element):
-        self.children.append(element)
-
-    def __repr__(self):
-        return "<!DOCUMENT>"
-
-document = Document([])
 
 def parseColor(color, fg=True):
     if color[-1] == "m":
@@ -91,10 +72,10 @@ def stringToInt(string, default=0):
     return default
 
 class Element:
-    def __init__(self, tag, attrs, parent=Document, children=None, **kwargs):
+    def __init__(self, tag, attrs, parent, children=None, **kwargs):
         self.tag = tag
         self.attrs = attrs
-        self.parent = parent
+        self.parent = parent or document
         self.children: List[Element] = children or []
         self._class = ""
         self.styles = {}
@@ -109,12 +90,20 @@ class Element:
         self.postText = kwargs.get("postText") or ""
         self.postText = str(self.postText)
         self.specialAttrs = kwargs.get("specialAttrs", {})
-        self._parseAttrs()
         self.selfClosing = False
-        self.parseGlobalStyles()
 
     def getElementChildren(self):
         return tuple(x for x in self.children if not isinstance(x, TextElement))
+
+    def getFirstChild(self, element=None):
+        for child in self.children:
+            if isinstance(child, TextElement): continue
+            if not element or element == child.tag: return child
+
+    def getLastChild(self, element=None):
+        for child in self.children[::-1]:
+            if isinstance(child, TextElement): continue
+            if not element or element == child.tag: return child
 
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
@@ -233,7 +222,21 @@ class Element:
         yield self.postText
 
     def matchesSelector(self, selector):
-        t, value = selector
+        t, value, pc = selector
+        if "first-child" in pc:
+            firstChild = self.parent.getFirstChild()
+            if firstChild and id(firstChild) != id(self):
+                return False
+        if "last-child" in pc:
+            lastChild = self.parent.getLastChild()
+            if lastChild and id(lastChild) != id(self):
+                return False
+        if "first-instance" in pc:
+            firstInstance = self.parent.getFirstChild(element=self.tag)
+            if firstInstance and id(firstInstance) != id(self): return False
+        elif "last-instance" in pc:
+            lastInstance = self.parent.getLastChild(element=self.tag)
+            if lastInstance and id(lastInstance) != id(self): return False
         if t == "tag" and self.tag == value:
             return True
         elif t == "class" and self._class == value:
@@ -248,6 +251,26 @@ class Element:
 
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
+
+class Document(Element):
+    def __init__(self, children):
+        self.Parent = None
+        self.children = children
+        self.innerHTML = ""
+        self.styles = {}
+        self.textCase = "auto"
+        self.x = "auto"
+        self.whitespace = "auto"
+        self.tag = "!DOCUMENT"
+        self.preText = ""
+
+    def addChild(self, element):
+        self.children.append(element)
+
+    def __repr__(self):
+        return "<!DOCUMENT>"
+
+document = Document([])
 
 class AnchorElement(Element):
     def __init__(self, *args, **kwargs):
@@ -412,10 +435,12 @@ class TextElement:
     def __repr__(self):
         return f'{self.text}'
 
-
 def parseChildren(element: Element):
     text = ""
     for child in element.children:
+        if not isinstance(child, TextElement):
+            child._parseAttrs()
+            child.parseGlobalStyles()
         for style in child.parent.styles.items():
             for r in Element.renderStyle(style):
                 text += r

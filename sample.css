@@ -14,11 +14,11 @@ title{
     color: 31m;
 }
 
-.upper{
+.upper:first-instance{
     text-case: upper;
 }
 
-a{
+a:last-child{
     text-case: upper;
     color: white;
 }
