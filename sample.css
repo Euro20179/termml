@@ -14,7 +14,7 @@ title{
     color: 31m;
 }
 
-.upper:first-child{
+.upper:first-instance{
     text-case: upper;
 }
 

@@ -15,8 +15,8 @@ elements that do nothing:
 </head>
 
 <main>
-    <p class="upper">test</p>
     <title>Hello :)</title>
+    <p class="upper">test</p>
 
     <p class="upper">test2</p>
     <p>here is some <b>bolded and <i>italic</i> </b>text</p>
@@ -34,4 +34,3 @@ elements that do nothing:
 
     <a href="www.google.com">hi</a>
 </main>
-

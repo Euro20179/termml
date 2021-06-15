@@ -90,21 +90,20 @@ class Element:
         self.postText = kwargs.get("postText") or ""
         self.postText = str(self.postText)
         self.specialAttrs = kwargs.get("specialAttrs", {})
-        self._parseAttrs()
         self.selfClosing = False
-        self.parseGlobalStyles()
 
     def getElementChildren(self):
         return tuple(x for x in self.children if not isinstance(x, TextElement))
 
-    def getFirstChild(self):
+    def getFirstChild(self, element=None):
         for child in self.children:
             if isinstance(child, TextElement): continue
-            return child
-    def getLastChild(self):
+            if not element or element == child.tag: return child
+
+    def getLastChild(self, element=None):
         for child in self.children[::-1]:
             if isinstance(child, TextElement): continue
-            return child
+            if not element or element == child.tag: return child
 
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
@@ -228,6 +227,16 @@ class Element:
             firstChild = self.parent.getFirstChild()
             if firstChild and id(firstChild) != id(self):
                 return False
+        if "last-child" in pc:
+            lastChild = self.parent.getLastChild()
+            if lastChild and id(lastChild) != id(self):
+                return False
+        if "first-instance" in pc:
+            firstInstance = self.parent.getFirstChild(element=self.tag)
+            if firstInstance and id(firstInstance) != id(self): return False
+        elif "last-instance" in pc:
+            lastInstance = self.parent.getLastChild(element=self.tag)
+            if lastInstance and id(lastInstance) != id(self): return False
         if t == "tag" and self.tag == value:
             return True
         elif t == "class" and self._class == value:
@@ -426,10 +435,12 @@ class TextElement:
     def __repr__(self):
         return f'{self.text}'
 
-
 def parseChildren(element: Element):
     text = ""
     for child in element.children:
+        if not isinstance(child, TextElement):
+            child._parseAttrs()
+            child.parseGlobalStyles()
         for style in child.parent.styles.items():
             for r in Element.renderStyle(style):
                 text += r
