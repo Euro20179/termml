@@ -37,5 +37,15 @@ elements that do nothing:
 	<red>hi</red>
 	<br />
 	<span color="#FF8300">hi</span>
+	<br />
+	<yellow>hi</yellow>
+	<br />
+	<green>hi</green>
+	<br />
+	<blue>hi</blue>
+	<br />
+	<span color="#4C6AC3">hi</span>
+	<br />
+	<span color="#944CC3">hi</span>
     </p>
 </main>
