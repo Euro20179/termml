@@ -27,7 +27,7 @@ class Token:
     def __repr__(self):
         return f'[T:{self.type}: {self.value}]'
 
-class CSSParser:
+class CSSLexer:
     def __init__(self):
         self.reset()
 
@@ -132,7 +132,7 @@ class Rule:
 }}
 """
     
-class CSSLexer:
+class CSSParser:
     def __init__(self):
         self.reset()
 
@@ -203,8 +203,8 @@ l = CSSLexer()
 def parseStyleSheet(fp):
     with open(fp, "r") as f:
         text = f.read()
-    p.feed(text)
-    l.feed(p.tokens)
-    for rule in l.ruleList:
+    l.feed(text)
+    p.feed(l.tokens)
+    for rule in p.ruleList:
         GLOBAL_STYLES[(rule.selectorType, rule.selectorValue)] = rule.properties
     return GLOBAL_STYLES
