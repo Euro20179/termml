@@ -94,6 +94,7 @@ class Element:
         self.postText = str(self.postText)
         self.specialAttrs = kwargs.get("specialAttrs", {})
         self.selfClosing = False
+        self.inherit = parent.inherit;
 
     def getElementChildren(self):
         return tuple(x for x in self.children if not isinstance(x, TextElement))
@@ -110,6 +111,8 @@ class Element:
 
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
+            _, _, pc = selector
+            if "no-inherit" in pc: self.inherit = False
             if self.matchesSelector(selector):
                 for attr, value in properties.items():
                     if attr != "text-style":
@@ -268,6 +271,7 @@ class Document(Element):
         self.whitespace = "auto"
         self.tag = "!DOCUMENT"
         self.preText = ""
+        self.inherit = True
 
     def addChild(self, element):
         self.children.append(element)
@@ -489,8 +493,9 @@ def parseChildren(element: Element):
             child._parseAttrs()
             child.parseGlobalStyles()
         for style in child.parent.styles.items():
-            for r in Element.renderStyle(style):
-                text += r
+            if child.parent.inherit:
+                for r in Element.renderStyle(style):
+                    text += r
         topLines, bottomLines = child._calculateNewLines()
         #preRender should render stuff like \033[31m (colors/ansi escapes) and newLines
         #postRender should render \033[0m and newLines

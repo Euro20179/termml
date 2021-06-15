@@ -9,7 +9,6 @@ elements that do nothing:
 <!DOCTYPE tml>
 
 <head, class="yes">
-    <!--clear-->
     <css href="sample.css" />
     <clear />
 </head>
