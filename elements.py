@@ -44,6 +44,7 @@ TEXT_STYLES = {
 }
 
 
+#TODO: add support for rgb() and hsl() and possibly cymk()
 def parseColor(color, fg=True):
     if color[-1] == "m":
         return color.strip("m")
@@ -78,6 +79,8 @@ class Element:
         self.parent = parent or document
         self.children: List[Element] = children or []
         self._class = ""
+        #styles are things that work in ansi escape sequences, everything else will be an attribute
+        #this is a bit redundant, and is a bit messy i'd like to remove it
         self.styles = {}
         self.gap = kwargs.get("gap") or 0 #the multiplier for the gap, 1 is normal 2, is twice the default
         self.bottomGap = kwargs.get("bottomGap") or 0
@@ -125,6 +128,8 @@ class Element:
                 color = BACKGROUND_COLORS.get(value)
                 if not color: color = parseColor(value, False)
                 self.styles["background"] = color
+            #text-style is a list of text styles, (bold, italic, etc)
+            #any css element that will be comma separated will be a list
             elif attr == "text-style":
                 self.styles["text-style"] = []
                 if isinstance(value, str):
@@ -268,7 +273,7 @@ class Document(Element):
         self.children.append(element)
 
     def __repr__(self):
-        return "<!DOCUMENT>"
+        return "<DOCUMENT>"
 
 document = Document([])
 
@@ -479,6 +484,7 @@ class TextElement:
 def parseChildren(element: Element):
     text = ""
     for child in element.children:
+        #apply styles to elements if not TextElement
         if not isinstance(child, TextElement):
             child._parseAttrs()
             child.parseGlobalStyles()
@@ -486,6 +492,11 @@ def parseChildren(element: Element):
             for r in Element.renderStyle(style):
                 text += r
         topLines, bottomLines = child._calculateNewLines()
+        #preRender should render stuff like \033[31m (colors/ansi escapes) and newLines
+        #postRender should render \033[0m and newLines
+        #preRenderText should render text that comes before the main text (similar to ::before in css)
+        #render should render the main text in the element
+        #postRenderText should render text that comes after to the main text (similar to ::after in css)
         for t in child.preRender(topLines): text += t
         for t in child.renderPreText(): text += t
         for t in child.render(): text += t

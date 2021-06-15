@@ -8,7 +8,6 @@ except Exception:
     print("No file given (use - for stdin)")
     exit(2)
 
-
 if file == "-":
     html = sys.stdin.read()
 else:
