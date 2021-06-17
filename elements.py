@@ -5,6 +5,7 @@ import random
 from os import system
 from shutil import get_terminal_size
 from cssparser import parseStyleSheet, GLOBAL_STYLES
+import os
 
 cols, lines = get_terminal_size()
 
@@ -66,6 +67,14 @@ def parseColor(color, fg=True):
         if fg: return COLORS[color]
         else: return BACKGROUND_COLORS[color]
     return f"{{INVALID COLOR: {color}}}"
+
+#returns all children of an element that are TextElements
+def yieldTextChildren(element):
+    for child in element.children:
+        if isinstance(child, TextElement):
+            yield child
+        else:
+            yield from yieldTextChildren(child)
 
 def stringToInt(string, default=0):
     if string.isnumeric():
@@ -284,6 +293,53 @@ class Document(Element):
         return "<DOCUMENT>"
 
 document = Document([])
+
+class ExecElement(Element):
+    def __init__(self, *args, **kwargs):
+        self.cache = True
+        super().__init__(*args, specialAttrs={
+            "no-cache": setattr(self, "cache", False)
+            }, **kwargs)
+        self.args = ""
+        self.execCache = None
+
+    def addArg(self, arg):
+        self.args += arg
+
+    def execute(self):
+        if not self.args: return ""
+        if self.execCache is None and self.cache:
+            self.execCache = os.popen(self.args).read()
+        elif not self.cache:
+            return os.popen(self.args).read()
+        return self.execCache
+
+class ArgElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, specialAttrs={
+            "value": lambda v: self.parent.addArg(v + " "),
+            "v": lambda v: self.parent.addArg(v + " "),
+            "all": lambda v: setattr(self.parent, "args", self.parent.args + v)
+            }, **kwargs)
+        self.selfClosing = True
+
+class OutputElement(Element):
+    def __init__(self, *args, **kwargs):
+        self.replace = ""
+        super().__init__(*args, specialAttrs={
+            "replace": lambda v: setattr(self, "replace", v)
+            }, **kwargs)
+
+
+    def preRender(self, *args):
+        output = self.parent.execute()
+        if not self.replace: self.children.append(TextElement(output, self))
+        else:
+            for child in yieldTextChildren(self):
+                if child:
+                    child.text = child.text.replace(self.replace, output)
+        yield from super().preRender(*args)
+
 
 class AnchorElement(Element):
     def __init__(self, *args, **kwargs):
@@ -553,4 +609,4 @@ def parseChildren(element: Element):
         for t in child.postRender(bottomLines): text += t
     return text
 
-SELF_CLOSING_TAGS = ("br", "hr", "clear", "css")
+SELF_CLOSING_TAGS = ("br", "hr", "clear", "css", "arg")

@@ -48,4 +48,9 @@ elements that do nothing:
 	<br />
 	<span color="#944CC3">hi</span>
     </p>
+    <exec>
+	<arg all="echo hi; notify-send yes"/>
+	<output replace="{}">output: <red>{}</red></output>
+	<output></output>
+    </exec>
 </main>

@@ -1,0 +1,19 @@
+string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-"
+value = PRINTABLE CHARACTERS
+
+quote = "|'
+
+pseudo-class = string
+
+CLASS = "."string
+TAG = string
+ID = "#"string
+
+colon = ":"
+semi-colon = ";"
+
+selector = (CLASS|TAG|ID)(colon pseudo-class)?(colon colon pseudo-element)?
+
+property = string colon (quote? value quote? ,?)* semi-colon
+
+rule = selector"{"property*"}"
