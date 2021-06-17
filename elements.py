@@ -630,8 +630,6 @@ def parseChildren(element: Element):
         if not isinstance(child, TextElement):
             child._parseAttrs()
             child.parseGlobalStyles()
-        #clear styles at start
-        text += "\033[0m"
         #renders the styles 3 times (before start, before main, before end) in case they are cleared
         for style in renderStyles(child):
             text += style

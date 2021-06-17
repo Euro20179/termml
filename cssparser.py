@@ -19,6 +19,7 @@ class TOKENS(Enum):
     endProperty = 8
     comment = 12
     pseudoClassValue = 13
+    pseudoElementValue = 14
 
 class Token:
     def __init__(self, _type, value):
@@ -76,6 +77,8 @@ class CSSLexer:
                 elif selectorType == "class": tt = TOKENS.className
                 elif selectorType == "id": tt = TOKENS.idName
                 self.tokens.append(Token(tt, self.createValue(exclude=":;,{ \"'")))
+            elif char in ascii_letters + "-" and not inBlock and len(self.tokens) >=2 and self.tokens[-2:] == [TOKENS.colon, TOKENS.colon]:
+                self.tokens.append(Token(TOKENS.pseudoElementValue, self.createValue(exclude="{: ")))
             elif char in ascii_letters + "-" and not inBlock and self.tokens[-1].type == TOKENS.colon:
                 self.tokens.append(Token(TOKENS.pseudoClassValue, self.createValue(exclude="{: ")))
 
@@ -142,6 +145,7 @@ class Rule:
         self.selectorValue = selectorValue
         self.properties = properties
         self.pseudoClasses = []
+        self.pseudoElement = ""
 
     def __repr__(self):
         return f"""{self.selectorType}: {self.selectorValue}{{
@@ -176,8 +180,12 @@ class CSSParser:
         next(self)
         if self.currTok.type == TOKENS.colon:
             next(self)
-            rule.pseudoClasses = self.pseudoClass()
+            if self.currTok.type == TOKENS.colon:
+                next(self)
+                rule.pseudoElement = self.currTok.value
+            else: rule.pseudoClasses = self.pseudoClass()
         rule.properties = self.rules()
+
 
     def rules(self):
         properties = {}
@@ -202,7 +210,6 @@ class CSSParser:
             next(self)
             Class += self.pseudoClass()
         return Class
-
 
          
     def back(self):
