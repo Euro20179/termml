@@ -245,10 +245,12 @@ class Element:
         yield parseChildren(self.before)
 
     def renderPreText(self):
+        yield "\033[0m"
         for style in self.styles.items():
             yield from Element.renderStyle(style)
 
     def renderPostText(self):
+        yield "\033[0m"
         yield parseChildren(self.after)
 
     def matchesSelector(self, selector):
@@ -656,12 +658,12 @@ def parseChildren(element: Element):
         #render should render the main text in the element
         #postRenderText should render text that comes after to the main text (similar to ::after in css)
         for t in child.preRender(topLines): text += t
+        for style in renderStyles(child):
+            text += style
         for t in child.renderPreText(): text += t
         for style in renderStyles(child):
             text += style
         for t in child.render(): text += t
-        for style in renderStyles(child):
-            text += style
         for t in child.renderPostText(): text += t
         for t in child.postRender(bottomLines): text += t
 

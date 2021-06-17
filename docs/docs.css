@@ -6,6 +6,12 @@ section{
     post-text:"---------";
     color: #95CBFF;
 }
+.section::before{
+    color: #95CBFF;
+}
+.section::after{
+    color: #95CBFF;
+}
 .code{
     text-style: i;
     color: #b5b5b5;

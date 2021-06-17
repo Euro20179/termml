@@ -29,8 +29,8 @@ elements that do nothing:
     	<oli>hi2</oli>
     </l>
 
-    <uli pre-text="no">hik</uli>
-    <uli pre-text="no">ok</uli>
+    <uli>hik</uli>
+    <uli>ok</uli>
 
     <a href="www.google.com">hi</a>
     <p>

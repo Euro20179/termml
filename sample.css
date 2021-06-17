@@ -17,13 +17,13 @@ title::before{
 title{
     pre-text: hi;
     color: 33m;
-    post-text:".        hi";
+    post-text:"        hi";
     whitespace: pre;
 }
 
 title::after{
     whitespace: pre;
-    color: 32m;
+    color: 33m;
 }
 
 .upper:first-instance{
@@ -37,4 +37,8 @@ p:no-inherit{
 a{
     text-case: upper;
     color: white;
+}
+
+uli{
+    pre-text:"+ ";
 }
