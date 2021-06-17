@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 from typing import List
 from elements import *
 from shutil import get_terminal_size
+import re
 
 cols, lines = get_terminal_size()
 class TMLParser(HTMLParser):
@@ -27,6 +28,7 @@ class TMLParser(HTMLParser):
         elif tag == "exec": e = ExecElement(tag, attrs, parent=self.currTag)
         elif tag == "arg" and isinstance(self.currTag, ExecElement): e = ArgElement(tag, attrs, parent=self.currTag)
         elif tag == "output" and isinstance(self.currTag, ExecElement): e = OutputElement(tag, attrs, parent=self.currTag)
+        elif re.match("^h[0-9]+$", tag, re.IGNORECASE): e = HeaderElement(tag, attrs, parent=self.currTag)
         elif tag == "black": e = BlackElement(tag, attrs, parent=self.currTag)
         elif tag == "red": e = RedElement(tag, attrs, parent=self.currTag)
         elif tag == "green": e = GreenElement(tag, attrs, parent=self.currTag)

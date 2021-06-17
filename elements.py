@@ -437,6 +437,33 @@ class StrikethroughElement(Element):
         try: self.styles["text-style"].append(TEXT_STYLES["strikethrough"])
         except KeyError: self.styles["text-style"] = [TEXT_STYLES["strikethrough"]]
 
+class HeaderElement(Element):
+    def __init__(self, tag, *args, **kwargs):
+        super().__init__(tag, *args, **kwargs, gap=1)
+        self.count = int(tag.strip("h"))
+        self.preColor = self._getPreColor()
+
+    def _getPreColor(self):
+        if self.count == 1:
+            return f'\033[{parseColor("#92F6C7")}m'
+        elif self.count == 2: 
+            return f'\033[{parseColor("#11C6C7")}m'
+        elif self.count == 3:
+            return f'\033[{parseColor("#00687A")}m'
+        elif self.count == 4:
+            return f'\033[{parseColor("#525596")}m'
+        elif self.count == 5:
+            return f'\033[{parseColor("#5B3575")}m'
+        elif self.count == 6:
+            return f'\033[{parseColor("#501F34")}m'
+        return f'\033[{parseColor("#343434")}m'
+
+    def renderPreText(self):
+        yield self.preColor
+        if self.count > 1:
+            yield f'██{"█" * (self.count - 1)} '
+        else: yield "██ "
+
 class ParagraphElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, gap=1)
