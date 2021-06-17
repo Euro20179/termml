@@ -126,7 +126,10 @@ class Element:
                 for attr, value in properties.items():
                     if attr != "text-style":
                         value = value[0]
-                    self._parseAttrs([(attr, value)])
+                        self._parseAttrs([(attr, value)])
+                    elif attr == "text-style":
+                        for i in value:
+                            self._parseAttrs([(attr, i)])
 
     def _parseAttrs(self, attrs=None):
         for attr, value in (attrs or self.attrs):
@@ -143,7 +146,7 @@ class Element:
             #text-style is a list of text styles, (bold, italic, etc)
             #any css element that will be comma separated will be a list
             elif attr == "text-style":
-                self.styles["text-style"] = []
+                if not self.styles.get("text-style"): self.styles["text-style"] = []
                 if isinstance(value, str):
                     value = value.split(",")
                 for v in value:
