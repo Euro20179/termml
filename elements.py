@@ -278,7 +278,7 @@ class Element:
 
 class Document(Element):
     def __init__(self, children):
-        self.Parent = None
+        self.parent = None
         self.children = children
         self.innerHTML = ""
         self.styles = {}
@@ -354,8 +354,10 @@ class AnchorElement(Element):
         self._setInitialColor(COLORS["blue"])
 
     def render(self):
-        if self.href:
+        if getattr(self, "href", None) is not None:
             yield f'[{parseChildren(self)}\033[{self.styles["color"]}m]\033[{self.linkColor}m({self.href})\033[0m'
+        else:
+            yield f'{parseChildren(self)}\033[0m'
 
 class ListElement(Element):
     pass
