@@ -6,12 +6,24 @@
 //currently you cannot combine selectors, and you cannot have multiple selectors
 //currently specificity is not a thing
 
-title{
+title::before{
     //currently supported colors:
     //31m-39m
     //#xxx
     //#xxxxxx
     color: 31m;
+}
+
+title{
+    pre-text: hi;
+    color: 33m;
+    post-text:".        hi";
+    whitespace: pre;
+}
+
+title::after{
+    whitespace: pre;
+    color: 32m;
 }
 
 .upper:first-instance{

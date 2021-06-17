@@ -49,7 +49,7 @@ elements that do nothing:
 	<span color="#944CC3">hi</span>
     </p>
     <exec>
-	<arg all="echo hi; notify-send yes"/>
+	<arg all="echo hi"/>
 	<output replace="{}">output: <red>{}</red></output>
 	<output></output>
     </exec>

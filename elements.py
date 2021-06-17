@@ -104,6 +104,8 @@ class Element:
         self.specialAttrs = kwargs.get("specialAttrs", {})
         self.selfClosing = False
         self.inherit = parent.inherit;
+        if not isinstance(self, BeforeElement) and not isinstance(self, AfterElement): self.before = BeforeElement("::before", [], self)
+        if not isinstance(self, BeforeElement) and not isinstance(self, AfterElement): self.after = AfterElement("::after", [], self)
 
     def getElementChildren(self):
         return tuple(x for x in self.children if not isinstance(x, TextElement))
@@ -120,16 +122,20 @@ class Element:
 
     def parseGlobalStyles(self):
         for selector, properties in GLOBAL_STYLES.items():
-            _, _, pc = selector
+            _, _, pc, pe = selector
             if "no-inherit" in pc: self.inherit = False
             if self.matchesSelector(selector):
+                instance = self
+                if pe:
+                    if pe == "before": instance = self.before
+                    elif pe == "after": instance = self.after
                 for attr, value in properties.items():
                     if attr != "text-style":
                         value = value[0]
-                        self._parseAttrs([(attr, value)])
+                        instance._parseAttrs([(attr, value)])
                     elif attr == "text-style":
                         for i in value:
-                            self._parseAttrs([(attr, i)])
+                            instance._parseAttrs([(attr, i)])
 
     def _parseAttrs(self, attrs=None):
         for attr, value in (attrs or self.attrs):
@@ -185,9 +191,9 @@ class Element:
             elif attr == "class": 
                 self._class = value
             elif attr == "pre-text":
-                self.preText = value
+                self.before.children.append(TextElement(value, self.before))
             elif attr == "post-text":
-                self.postText = value
+                self.after.children.append(TextElement(value, self.after))
             elif attr in self.specialAttrs.keys():
                 self.specialAttrs[attr](value)
 
@@ -235,18 +241,18 @@ class Element:
             else: yield f'\033[{value}'
 
     def preRender(self, topLines):
-        for style in self.styles.items():
-            yield from Element.renderStyle(style)
         yield topLines
+        yield parseChildren(self.before)
 
     def renderPreText(self):
-        yield self.preText
+        for style in self.styles.items():
+            yield from Element.renderStyle(style)
 
     def renderPostText(self):
-        yield self.postText
+        yield parseChildren(self.after)
 
     def matchesSelector(self, selector):
-        t, value, pc = selector
+        t, value, pc, pe = selector
         if "first-child" in pc:
             firstChild = self.parent.getFirstChild()
             if firstChild and id(firstChild) != id(self):
@@ -275,6 +281,12 @@ class Element:
 
     def __repr__(self):
         return f'<{self.tag}{self.attrs}>{self.children}</{self.tag}>'
+
+class BeforeElement(Element):
+    pass
+
+class AfterElement(Element):
+    pass
 
 class Document(Element):
     def __init__(self, children):
@@ -572,9 +584,6 @@ class TextElement:
         self.parent = parent
         self.text = text
         self.tag = "textNode"
-        if self.parent.whitespace == "auto":
-            self.text = re.sub('\\s{2,}',"", self.text) #remove pre whitespace
-            self.text = self.text.replace("\n", "") #no new lines
         self.styles = self.parent.styles
 
     def _calculateX(self):
@@ -584,6 +593,11 @@ class TextElement:
         if pos == "center":
             return (cols // 2) - round(len(self.text) / 2)
 
+    def _calcWhitespace(self):
+        if self.parent.whitespace == "auto":
+            self.text = re.sub('\\s{2,}'," ", self.text) #remove pre whitespace
+            self.text = re.sub('^\\s*',"", self.text) #remove pre whitespace
+            self.text = self.text.replace("\n", "") #no new lines
 
     def _calculateNewLines(self):
         return "", ""
@@ -630,6 +644,8 @@ def parseChildren(element: Element):
         if not isinstance(child, TextElement):
             child._parseAttrs()
             child.parseGlobalStyles()
+        else:
+            child._calcWhitespace()
         #renders the styles 3 times (before start, before main, before end) in case they are cleared
         for style in renderStyles(child):
             text += style

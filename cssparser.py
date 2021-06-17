@@ -77,7 +77,7 @@ class CSSLexer:
                 elif selectorType == "class": tt = TOKENS.className
                 elif selectorType == "id": tt = TOKENS.idName
                 self.tokens.append(Token(tt, self.createValue(exclude=":;,{ \"'")))
-            elif char in ascii_letters + "-" and not inBlock and len(self.tokens) >=2 and self.tokens[-2:] == [TOKENS.colon, TOKENS.colon]:
+            elif char in ascii_letters + "-" and not inBlock and len(self.tokens) >=2 and self.tokens[-2].type == TOKENS.colon and self.tokens[-1].type == TOKENS.colon:
                 self.tokens.append(Token(TOKENS.pseudoElementValue, self.createValue(exclude="{: ")))
             elif char in ascii_letters + "-" and not inBlock and self.tokens[-1].type == TOKENS.colon:
                 self.tokens.append(Token(TOKENS.pseudoClassValue, self.createValue(exclude="{: ")))
@@ -243,5 +243,5 @@ def parseStyleSheet(fp):
     l.feed(text)
     p.feed(l.tokens)
     for rule in p.ruleList:
-        GLOBAL_STYLES[(rule.selectorType, rule.selectorValue, tuple(rule.pseudoClasses))] = rule.properties
+        GLOBAL_STYLES[(rule.selectorType, rule.selectorValue, tuple(rule.pseudoClasses), rule.pseudoElement)] = rule.properties
     return GLOBAL_STYLES
