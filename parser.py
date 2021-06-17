@@ -45,7 +45,7 @@ class TMLParser(HTMLParser):
         elif tag == "bg-white": e = BGWhiteElement(tag, attrs, parent=self.currTag)
         elif tag == "uli": 
             if self.currTag.tag == "l":
-                try: topGap = 0 if self.currTag.children[-1].tag == "uli" else 1
+                try: topGap = 0 if self.currTag.getElementChildren()[-1].tag == "uli" else 1
                 except IndexError: topGap = 1
             else: topGap = 1
             e =  UnorderedListElement(tag, attrs, parent=self.currTag, topGap=topGap)

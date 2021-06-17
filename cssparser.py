@@ -33,7 +33,7 @@ class CSSLexer:
         self.reset()
 
     def reset(self):
-        self.tokens = []
+        self.tokens = [Token(-1, "")]
         self._i = -1
 
     def feed(self, text):

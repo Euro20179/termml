@@ -364,8 +364,7 @@ class OrderedListElement(Element):
 
 class UnorderedListElement(Element):
     def __init__(self, *args, marker="* ", topGap=0, **kwargs):
-        self.preText = marker
-        super().__init__(*args, **kwargs, bottomGap=1, topGap=topGap)
+        super().__init__(*args, **kwargs, bottomGap=1, topGap=topGap, preText=marker)
 
 class BoldElement(Element):
     def __init__(self, *args, **kwargs):
@@ -585,6 +584,13 @@ class TextElement:
     def __repr__(self):
         return f'{self.text}'
 
+def renderStyles(child):
+    for style in child.parent.styles.items():
+        if child.parent.inherit:
+            for r in Element.renderStyle(style):
+                yield r
+
+
 def parseChildren(element: Element):
     text = ""
     for child in element.children:
@@ -592,10 +598,11 @@ def parseChildren(element: Element):
         if not isinstance(child, TextElement):
             child._parseAttrs()
             child.parseGlobalStyles()
-        for style in child.parent.styles.items():
-            if child.parent.inherit:
-                for r in Element.renderStyle(style):
-                    text += r
+        #clear styles at start
+        text += "\033[0m"
+        #renders the styles 3 times (before start, before main, before end) in case they are cleared
+        for style in renderStyles(child):
+            text += style
         topLines, bottomLines = child._calculateNewLines()
         #preRender should render stuff like \033[31m (colors/ansi escapes) and newLines
         #postRender should render \033[0m and newLines
@@ -604,9 +611,14 @@ def parseChildren(element: Element):
         #postRenderText should render text that comes after to the main text (similar to ::after in css)
         for t in child.preRender(topLines): text += t
         for t in child.renderPreText(): text += t
+        for style in renderStyles(child):
+            text += style
         for t in child.render(): text += t
+        for style in renderStyles(child):
+            text += style
         for t in child.renderPostText(): text += t
         for t in child.postRender(bottomLines): text += t
+
     return text
 
 SELF_CLOSING_TAGS = ("br", "hr", "clear", "css", "arg")
