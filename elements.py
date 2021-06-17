@@ -325,6 +325,7 @@ class ExecElement(Element):
 
     def execute(self):
         if not self.args: return ""
+        if eval(os.environ.get("_TML_SAFEMODE")): return ""
         if self.execCache is None and self.cache:
             self.execCache = os.popen(self.args).read()
         elif not self.cache:
