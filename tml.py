@@ -2,11 +2,12 @@
 import parser
 import sys
 import shutil
+import argparse
 
-try: file = sys.argv[1]
-except Exception:
-    print("No file given (use - for stdin)")
-    exit(2)
+p = argparse.ArgumentParser()
+p.add_argument("file", help="the file to read from (use - for stdin)")
+args = p.parse_args()
+file = args.file
 
 if file == "-":
     html = sys.stdin.read()
