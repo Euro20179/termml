@@ -9,7 +9,7 @@ elements that do nothing:
 <!DOCTYPE tml>
 
 <head, class="yes">
-    <css href="sample.css" />
+    <meta href="sample.css" />
     <clear />
 </head>
 
@@ -54,3 +54,8 @@ elements that do nothing:
 	<output></output>
     </exec>
 </main>
+
+<meta tab="^    " />
+<h whitespace="pre">
+    <s>hi    yes</s>
+</h>

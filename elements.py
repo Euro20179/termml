@@ -9,6 +9,12 @@ import os
 
 cols, lines = get_terminal_size()
 
+TAB = "^(    )"
+
+def setTab(t):
+    global TAB
+    TAB = t
+
 COLORS = {
     "black": "30",
     "default": "0",
@@ -581,6 +587,14 @@ class BGWhiteElement(Element):
         super().__init__(*args, **kwargs)
         self._setInitialBGColor(BACKGROUND_COLORS["white"])
 
+class MetaElement(Element):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, specialAttrs={
+            "tab": lambda v: setTab(v),
+            "href": lambda v: parseStyleSheet(v)
+            }, **kwargs)
+        self.selfClosing = True
+
 class TextElement:
     def __init__(self, text, parent=None):
         self.parent = parent
@@ -596,6 +610,7 @@ class TextElement:
             return (cols // 2) - round(len(self.text) / 2)
 
     def _calcWhitespace(self):
+        self.text = re.sub(TAB, "", self.text, flags=re.MULTILINE)
         if self.parent.whitespace == "auto":
             self.text = re.sub('\\s{2,}'," ", self.text) #remove pre whitespace
             self.text = re.sub('^\\s*',"", self.text) #remove pre whitespace
@@ -669,4 +684,4 @@ def parseChildren(element: Element):
 
     return text
 
-SELF_CLOSING_TAGS = ("br", "hr", "clear", "css", "arg")
+SELF_CLOSING_TAGS = ("br", "hr", "clear", "css", "arg", "meta")
