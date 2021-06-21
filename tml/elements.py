@@ -4,7 +4,7 @@ import math
 import random
 from os import system
 from shutil import get_terminal_size
-from cssparser import parseStyleSheet, GLOBAL_STYLES
+from tml.cssparser import parseStyleSheet, GLOBAL_STYLES
 import os
 
 cols, lines = get_terminal_size()

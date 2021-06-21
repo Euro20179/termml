@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
 from typing import List
-from elements import *
+from tml.elements import *
 from shutil import get_terminal_size
 import re
 

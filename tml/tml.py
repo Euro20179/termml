@@ -1,5 +1,5 @@
 #!/bin/python
-import parser
+from tml import parser
 import sys
 import shutil
 import argparse
