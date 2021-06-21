@@ -96,7 +96,7 @@ class Element:
         self.topGap = kwargs.get("topGap") or 0
         self.textCase = kwargs.get("textCase") or "auto"
         self.x = kwargs.get("x") or "auto"
-        self.whitespace = "auto"
+        self.whitespace = kwargs.get("whitespace") or "auto"
         self.preText = kwargs.get('preText') or ""
         self.preText = str(self.preText)
         self.postText = kwargs.get("postText") or ""
@@ -346,8 +346,7 @@ class OutputElement(Element):
         self.replace = ""
         super().__init__(*args, specialAttrs={
             "replace": lambda v: setattr(self, "replace", v)
-            }, **kwargs)
-
+            }, whitespace="pre", **kwargs)
 
     def preRender(self, *args):
         output = self.parent.execute()
