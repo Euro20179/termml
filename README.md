@@ -6,6 +6,25 @@ Features missing when not interprated at runtime
 * hr (horizontal rules), the length is calculated at runtime, so if written, the line may be too long/short
 * title, the center position is calculated at runtime, may be off when written to a file
 
+## Installation
+
+```sh
+git clone https://github.com/euro20179/tml
+cd tml
+make install
+```
+
+Uninstall:
+```sh
+make uninstall
+```
+
+or
+
+```sh
+pip uninstall tml
+```
+
 ### Example
 
 a sample tml file
