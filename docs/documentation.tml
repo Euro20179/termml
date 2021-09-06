@@ -1,0 +1,192 @@
+<head>
+    <clear />
+    <css href="docs/docs.css" />
+</head>
+
+<header>
+    <title x="center">Documentation</title>
+</header>
+
+<main>
+    <p>
+	Below is a list of elements that are built-in and ready to use
+    </p>
+
+    <section>
+	<p class="section">How Elements Work</p>
+	<l>
+	<uli>
+	    each element has a top-gap, and a bottom-gap, for example a p has a top-gap and bottom-gap of 1 which simplifies to a gap of 1.
+	</uli>
+	<uli>
+	    each element also has pre-text and post-text, pre-text gets rendered before the main text, and post-text after
+	</uli>
+	<uli>
+	    elements will always inherit their parent's attributes, unless the no-inherit flag is set on the parent.<br />This can be done in css with this selector <i color="#B5B5B5">[element]:no-inherit</i>.
+	</uli>
+	</l>
+    </section>
+
+    <section>
+	<p class="section">Limitations</p>
+	<l>
+	<uli>
+	    all self enclosed elements must be manually self-closed ie: <i color="#B5B5B5">&lt;element/&gt;</i>
+	</uli>
+	</l>
+    </section>
+
+    <section>
+	<p class="section">p (paragraph)</p>
+	<p>
+	    The paragraph element is a basic element with a line above and blow it
+	</p>
+    </section>
+
+    <section>
+	<p class="section">br (break)</p>
+	<p>
+	    the break element is a self closing element that adds a new line
+	</p>
+    </section>
+
+    <section>
+	<p class="section">hr (horizontal rule)</p>
+	<p>
+	    hr is an element that draws a line across the screen
+	    <br/>
+	    currently the line cannot be re-colored as it useses the strikethrough mark to draw the line
+	</p>
+    </section>
+
+    <section>
+	<p class="section">title</p>
+	<p>
+	    title is an element that is all uppercase and underlined and automatically placed in the center
+	</p>
+    </section>
+
+    <section>
+	<p class="section">clear</p>
+	<p>
+	    clear is a self closing element that clears the screen when rendered.<br/>It should really only be used once at the top to clear the screen
+	</p>
+    </section>
+
+    <section>
+	<p class="section">css</p>
+	<p>
+	    css is an element that includes a css file with the href attribute, href being a path to a file
+	</p>
+    </section>
+
+    <section>
+	<p class="section">a</p>
+	<p>
+	    a is an element that sadly does not work like a normal a tag, however it formats it so that the text will look like "<blue>[text](link)</blue>"
+	    <br/>
+	    when href is not given, it will just render the text in blue
+	</p>
+    </section>
+
+    <section>
+	<p class="section">l</p>
+	<p>
+	    l starts a list, inside a list can be uli elements or oli elements
+	</p>
+    </section>
+
+    <section>
+	<p class="section">uli</p>
+	<p>
+	    uli is an unorered list item
+	</p>
+    </section>
+
+    <section>
+	<p class="section">oli</p>
+	<p>
+	    oli is an orered list item
+	</p>
+    </section>
+
+    <section>
+	<p class="section">exec, arg, output</p>
+	<p>
+	    these 3 elements allow you to run system/shell commands and write the output
+	</p>
+	<p>
+	    <b x="center">Exec:</b><br/>
+	    <p>
+		this element is the parent element of arg and output, it, this must be the parent element of arg and output for it to work
+	    </p>
+	    <br/>
+	    <b x="center">Arg:</b><br/>
+	    <p>
+		The element contains 1+ args for the command, 
+<br/>
+to add an arg, add the attribute value,
+<br/>
+to add more than 1 argument separated by space use all instead of value.
+<br/>
+this element is self closing
+	    </p>
+	    <br/>
+	    <b x="center">Output:</b><br/>
+	    <p>
+		This element is not self enclosing, because any text inside of output will remain, it will be prepended to the output
+		<br/>
+you can use the attribute replace to set what text the attribute replaces, eg:
+		<br/>
+		<span class="code">&lt;output replace="{}"&gt;&lt;red&gt;{}&lt/red&gt;&lt;/output&gt;</span>
+	    </p>
+	</p>
+    </section>
+
+    <section>
+	<p class="section">b, d, i, u, blink, inverse, inv, s</p>
+	<p>
+	    These elements are all very basic elements, they each apply their respective style<br/>
+	    <l>
+		<uli>b: bold</uli>
+		<uli>d: dim</uli>
+		<uli>i: italic</uli>
+		<uli>blink: blink</uli>
+		<uli>inverse: inverses the foreground and bg colors</uli>
+		<uli>inv: text is invisible</uli>
+		<uli>s: strikethrough</uli>
+	    </l>
+	</p>
+    </section>
+    <section>
+	<p class="section">colors</p>
+	<p>
+	    there is 1 color element for each of the basic ansi escape sequences,
+	    <l>
+		<uli>red</uli>
+		<uli>black</uli>
+		<uli>green</uli>
+		<uli>yellow</uli>
+		<uli>blue</uli>
+		<uli>magenta</uli>
+		<uli>cyan</uli>
+		<uli>white</uli>
+	    </l>
+	</p>
+    </section>
+    <section>
+	<p class="section">bg-colors</p>
+	<p>
+	    there is 1 bg-color element for each of the basic ansi escape sequences
+	    <l>
+		<uli>bg-red</uli>
+		<uli>bg-black</uli>
+		<uli>bg-green</uli>
+		<uli>bg-yellow</uli>
+		<uli>bg-blue</uli>
+		<uli>bg-magenta</uli>
+		<uli>bg-cyan</uli>
+		<uli>bg-white</uli>
+	    </l>
+    </section>
+</main>
