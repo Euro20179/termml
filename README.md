@@ -4,7 +4,7 @@ tml is a markup language specifically designed to be displayed in terminals, it 
 
 *WARNING:* currently this program will not work unless you install it
 
-Features missing when not interprated at runtime
+Additional features when interprated at runtime:
 * hr (horizontal rules), the length is calculated at runtime, so if written, the line may be too long/short
 * title, the center position is calculated at runtime, may be off when written to a file
 

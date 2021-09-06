@@ -1,5 +1,8 @@
 #!/bin/python
-from tml import parser
+try: from tml import parser
+except ImportError: 
+    print("try installing tml, and running the installed version")
+    exit(1)
 import sys
 import shutil
 import argparse
