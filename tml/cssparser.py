@@ -159,7 +159,7 @@ class CSSParser:
 
     def reset(self):
         self.styles = []
-        self._i = -1
+        self._i = 1
 
     def feed(self, tokens):
         self.reset()

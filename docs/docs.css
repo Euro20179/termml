@@ -1,9 +1,9 @@
 section{
-    top-gap: 1;
+    topgap: 1;
 }
 .section{
-    pre-text:"---------";
-    post-text:"---------";
+    pretext:"";
+    posttext:"";
     color: #95CBFF;
 }
 .section::before{
