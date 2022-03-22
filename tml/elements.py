@@ -252,6 +252,7 @@ class Element:
 
     def renderPreText(self):
         yield "\033[0m"
+        yield self.preText
         for style in self.styles.items():
             yield from Element.renderStyle(style)
 
