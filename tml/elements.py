@@ -2,6 +2,7 @@ from typing import List
 import re
 import math
 import random
+import subprocess
 from os import system
 from shutil import get_terminal_size
 from tml.cssparser import parseStyleSheet, GLOBAL_STYLES
@@ -321,29 +322,31 @@ document = Document([])
 class ExecElement(Element):
     def __init__(self, *args, **kwargs):
         self.cache = True
+        self.src = ""
         super().__init__(*args, specialAttrs={
+            "src": lambda v: setattr(self, "args", [v]),
             "no-cache": setattr(self, "cache", False)
             }, **kwargs)
-        self.args = ""
+        self.args = []
         self.execCache = None
 
     def addArg(self, arg):
-        self.args += arg
+        self.args.append(arg)
 
     def execute(self):
-        if not self.args: return ""
+        if not self.args and not self.src: return ""
         if eval(os.environ.get("_TML_SAFEMODE")): return ""
         if self.execCache is None and self.cache:
-            self.execCache = os.popen(self.args).read()
+            self.execCache = subprocess.check_output(self.args).decode("utf-8")
         elif not self.cache:
-            return os.popen(self.args).read()
+            return subprocess.check_output(self.args).decode("utf-8")
         return self.execCache
 
 class ArgElement(Element):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, specialAttrs={
-            "value": lambda v: self.parent.addArg(v + " "),
-            "v": lambda v: self.parent.addArg(v + " "),
+            "value": lambda v: self.parent.addArg(v),
+            "v": lambda v: self.parent.addArg(v),
             "all": lambda v: setattr(self.parent, "args", self.parent.args + v)
             }, **kwargs)
         self.selfClosing = True
